@@ -70,11 +70,11 @@ html {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    max-height: 100%;
-    overflow: hidden;
+    max-width: min(100%, 1200px);
     padding: var(--slide-padding);
 }
 
+/* 默认：笔记本屏幕 / 一般显示器 */
 :root {
     --title-size: clamp(1.5rem, 5vw, 4rem);
     --h2-size: clamp(1.25rem, 3.5vw, 2.5rem);
@@ -84,6 +84,18 @@ html {
     --slide-padding: clamp(1rem, 4vw, 4rem);
     --content-gap: clamp(0.5rem, 2vw, 2rem);
     --element-gap: clamp(0.25rem, 1vw, 1rem);
+}
+
+/* 投屏模式：大屏幕投影仪 / 会议室电视 — 在 <html> 加 class="projection" 启用 */
+.projection:root {
+    --title-size: clamp(2.8rem, 6.5vw, 5rem);
+    --h2-size: clamp(1.8rem, 4.2vw, 3rem);
+    --h3-size: clamp(1.3rem, 2.8vw, 1.9rem);
+    --body-size: clamp(1.05rem, 1.8vw, 1.35rem);
+    --small-size: clamp(0.88rem, 1.3vw, 1.1rem);
+    --slide-padding: clamp(2.5rem, 6vw, 6rem);
+    --content-gap: clamp(1.2rem, 3vw, 2.5rem);
+    --element-gap: clamp(0.3rem, 1vw, 0.8rem);
 }
 
 .card, .container, .content-box {
@@ -148,6 +160,15 @@ img, .image-container {
 ### CSS 注意事项
 
 不能直接取反 CSS 函数：`-clamp()` / `-min()` / `-max()` 会被浏览器静默忽略。必须用 `calc(-1 * clamp(...))` 包裹。
+
+### 投屏场景注意事项
+
+当演示文稿用于投影仪或大屏幕时：
+
+1. **在 `<html>` 标签添加 `class="projection"`** — 自动切换到更大的 clamp 参数集
+2. **加深辅助文字颜色** — 浅色主题中 `--text-secondary` 不应浅于 `#3d3835`，`--text-muted` 不应浅于 `#6b6560`，否则投影后难以阅读
+3. **避免 `max-height: 100%; overflow: hidden` 在 `.slide-content` 上** — 内容增多后极易导致顶部或底部被裁切（如标签、标题被遮挡），如确有溢出问题应通过拆页解决
+4. **`max-width` 限制** — `.slide-content` 建议加 `max-width: min(100%, 1200px)` 防止大屏幕上内容拉得太宽难以阅读
 
 ---
 
@@ -218,6 +239,266 @@ function addPanguSpacing(text) {
 
 ---
 
+## 通用组件
+
+以下组件在实际项目中高频使用，可直接复用。
+
+### 页码标识
+
+右上角显示当前页码，用斜体衬线字体增加编辑感。
+
+```html
+<span class="slide-number">02</span>
+```
+
+```css
+.slide-number {
+    position: absolute;
+    top: clamp(1.2rem, 3vw, 2.2rem);
+    right: clamp(1.8rem, 5vw, 4rem);
+    font-family: var(--font-display-en);
+    font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+    color: var(--text-muted);
+    font-weight: 400;
+    font-style: italic;
+}
+```
+
+### 分类标签
+
+slide 顶部的分类标签（如"发现一""核心洞察"），用小型大写字母风格。
+
+```html
+<div class="tag">发现一</div>
+```
+
+```css
+.tag {
+    display: inline-block;
+    font-size: var(--body-size);
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+    margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
+    font-family: var(--font-body-en), var(--font-body);
+}
+```
+
+### CSS 横向条形图
+
+适合品类密度、市场占比等数据展示。纯 CSS 实现，无 JS 依赖，动画由 `.visible` class 触发。
+
+```html
+<div class="css-bar-chart">
+    <div class="bar-row reveal">
+        <div class="bar-label">
+            <span class="bar-cat">酸奶 / 奶昔</span>
+            <span class="bar-brands">品牌 A · 品牌 B · 品牌 C…</span>
+        </div>
+        <div class="bar-track">
+            <div class="bar-value" style="--w:100%;--delay:0.1s"></div>
+        </div>
+        <span class="bar-num">7+</span>
+    </div>
+    <!-- 更多行... -->
+</div>
+```
+
+```css
+.css-bar-chart { display: flex; flex-direction: column; gap: clamp(0.5rem,1.2vw,1rem); }
+.bar-row {
+    display: grid;
+    grid-template-columns: minmax(120px, 30%) 1fr auto;
+    align-items: center;
+    gap: clamp(0.5rem, 1.5vw, 1.2rem);
+}
+.bar-cat { font-weight: 700; font-size: var(--body-size); display: block; }
+.bar-brands { font-size: var(--small-size); color: var(--text-muted); display: block; }
+.bar-track {
+    height: clamp(0.6rem, 1.2vw, 0.9rem);
+    background: var(--border-light, #eae6e0);
+    border-radius: 99px;
+    overflow: hidden;
+}
+.bar-value {
+    height: 100%; width: 0;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 1s var(--ease-out-expo);
+    transition-delay: var(--delay, 0s);
+}
+.slide.visible .bar-value { width: var(--w); }
+.bar-num {
+    font-family: var(--font-display-en);
+    font-weight: 700;
+    font-size: var(--h3-size);
+    color: var(--text-secondary);
+    min-width: 2.5em;
+    text-align: right;
+}
+```
+
+### CSS 价格/区间对比图
+
+适合价格带分析、时间段对比等场景。
+
+```html
+<div class="price-range-chart">
+    <div class="range-row reveal">
+        <span class="range-brand">品牌 A</span>
+        <div class="range-bar-wrap">
+            <div class="range-bar" style="left:10%;width:30%"></div>
+        </div>
+        <span class="range-price">¥15-28</span>
+    </div>
+    <div class="range-row reveal" style="background:rgba(200,146,46,0.1)">
+        <span class="range-brand" style="color:#c8922e;font-weight:700">空白机会</span>
+        <div class="range-bar-wrap">
+            <div class="range-bar gap-bar" style="left:25%;width:20%"></div>
+        </div>
+        <span class="range-price highlight">¥20-35</span>
+    </div>
+</div>
+```
+
+```css
+.price-range-chart { margin-top: var(--content-gap); }
+.range-row {
+    display: grid;
+    grid-template-columns: minmax(80px, 18%) 1fr auto;
+    align-items: center;
+    gap: clamp(0.5rem, 1.5vw, 1.2rem);
+    padding: clamp(0.4rem, 0.8vw, 0.7rem) clamp(0.8rem, 1.5vw, 1.2rem);
+    border-bottom: 1px solid var(--border-light, #eae6e0);
+}
+.range-brand { font-size: var(--body-size); color: var(--text-secondary); font-weight: 500; }
+.range-bar-wrap {
+    position: relative; height: clamp(0.5rem, 1vw, 0.7rem);
+    background: #cdc8c0; border-radius: 99px;
+}
+.range-bar {
+    position: absolute; top: 0; height: 100%;
+    background: var(--accent); border-radius: 99px;
+    opacity: 0; transition: opacity 0.6s ease;
+}
+.range-bar.gap-bar {
+    background: #c8922e;
+    animation: pulse-bar 2s ease-in-out infinite;
+}
+@keyframes pulse-bar { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+.slide.visible .range-bar { opacity: 1; }
+.range-price { font-family: var(--font-display-en); font-size: var(--body-size); min-width: 5em; text-align: right; }
+.range-price.highlight { color: #c8922e; font-weight: 700; }
+```
+
+### 数据卡片网格
+
+适合展示 3-4 个关键数字指标。
+
+```html
+<div class="data-cards">
+    <div class="data-card reveal">
+        <div class="number">17</div>
+        <div class="label">走访门店</div>
+    </div>
+    <!-- 更多卡片... -->
+</div>
+```
+
+```css
+.data-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+    gap: var(--content-gap);
+}
+.data-card {
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border, #e0dbd4);
+    padding: clamp(1rem, 2.5vw, 2rem);
+    text-align: center;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+}
+.data-card .number {
+    font-family: var(--font-display-en);
+    font-size: var(--big-number, clamp(2.5rem, 7vw, 4.5rem));
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent);
+}
+.data-card .label {
+    font-size: var(--body-size);
+    color: var(--text-secondary);
+    margin-top: var(--element-gap);
+}
+```
+
+### 态度型结尾页
+
+替代传统的"谢谢观看"，用一句有态度的话收尾。注意多行文本不要用 `<br>` 控制换行（在不同视口尺寸下 `<br>` 表现不一致），用 `<span style="display:block">` 强制每行独立。
+
+```html
+<section class="slide end-slide">
+    <div class="slide-content">
+        <div class="end-rule reveal"></div>
+        <h2 class="reveal-blur">
+            <span style="display:block">不是从零开始。</span>
+            <span style="display:block">是在已有的网络和经验上，</span>
+            <span style="display:block">做一次真正的升级。</span>
+        </h2>
+    </div>
+</section>
+```
+
+```css
+.end-slide {
+    background: var(--bg-primary);
+    justify-content: center;
+}
+.end-slide .slide-content {
+    max-width: min(90%, 900px);
+    text-align: center;
+}
+.end-rule {
+    width: clamp(2rem, 5vw, 4rem);
+    height: 2px;
+    background: var(--accent);
+    margin: 0 auto clamp(1.5rem, 4vw, 3rem);
+}
+.end-slide h2 {
+    font-size: var(--h2-size);
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+```
+
+---
+
+## 图标规范
+
+**禁止使用 Emoji 图标**。Emoji（🎯🔥📊 等）在专业演示中显得幼稚和廉价，无论什么主题都不要用。
+
+**替代方案**：使用内联 SVG 图标。好处是可以自定义颜色、大小，且不依赖外部文件。
+
+```html
+<!-- ✗ 不要这样 -->
+<span>🔥 热门品类</span>
+
+<!-- ✓ 用 inline SVG -->
+<span class="icon-hot">
+    <svg viewBox="0 0 16 16" width="1em" height="1em" fill="currentColor">
+        <path d="M8 16c3.314 0 6-2.686 6-6 0-1.5-.5-3.5-2-5-.643-.543-1-1.5-1.5-3-.5 1.5-1 2-2.5 3C6.5 6.5 6 8 6 9c0 .5-.5 1-1 1s-1-.5-1-1c0-1 .5-2 1-3-1.5 1-3 3.5-3 5.5C2 13.314 4.686 16 8 16z"/>
+    </svg>
+    热门品类
+</span>
+```
+
+对于简洁的分隔或装饰，也用 SVG 线条代替 em dash `—` 或其他 Unicode 装饰符。
+
+---
+
 ## Phase 0：检测模式
 
 判断用户意图：
@@ -240,6 +521,10 @@ function addPanguSpacing(text) {
 
 **问题 1：用途**
 - 选项：「路演/Pitch」「教学/教程」「会议演讲」「内部汇报」「产品展示」「数据汇报」
+
+**问题 1.5：展示方式**
+- 选项：「笔记本屏幕 / 桌面显示器」「投影仪 / 会议室大屏」「线上会议共享屏幕」
+- 如果是投影仪/大屏 → 在 `<html>` 加 `class="projection"` 启用大字号参数集，并加深辅助文字颜色
 
 **问题 2：页数**
 - 选项：「短（5-10 页）」「中等（10-20 页）」「长（20+ 页）」
@@ -596,7 +881,13 @@ HTML 中引用图片时统一使用相对路径 `images/{序号}.{ext}`：
 
 1. **SlidePresentation 类** — 键盘（方向键、空格）、触摸/滑动、鼠标滚轮、进度条、导航点
 2. **Intersection Observer** — 滚动触发 `.visible` class 驱动 CSS 动画
-3. **可选增强**（按风格）：自定义光标、粒子背景、视差效果、3D 倾斜、计数器动画
+3. **翻页笔兼容** — 无线翻页笔（PPT clicker）发送 `PageDown` / `PageUp` 键码。`setupKeyboard()` 中必须监听这两个键：
+   ```javascript
+   if (['ArrowDown','ArrowRight',' ','PageDown'].includes(e.key)) { this.next(); }
+   if (['ArrowUp','ArrowLeft','PageUp'].includes(e.key)) { this.prev(); }
+   ```
+   同时建议支持 `Home` 跳首页、`End` 跳末页。
+4. **可选增强**（按风格）：自定义光标、粒子背景、视差效果、3D 倾斜、计数器动画
 
 ### 代码质量
 
@@ -912,6 +1203,8 @@ def extract_pptx(file_path, output_dir):
 - 方向键（← →）或空格键翻页
 - 鼠标滚轮 / 触摸滑动也可以
 - 右侧圆点可跳转到指定页
+- 支持无线翻页笔（PageDown/PageUp）
+- 浏览器全屏：F11（Windows/Linux）或 Ctrl+Cmd+F（macOS）
 
 版本管理：
 - 修改时自动备份上一版到 versions/ 文件夹
@@ -1018,3 +1311,9 @@ def extract_pptx(file_path, output_dir):
 | 移动端问题 | 768px 以下禁用重效果，测试触摸事件 |
 | 性能问题 | 谨慎使用 `will-change`，优先用 `transform` 和 `opacity` 动画 |
 | 中文字体闪烁 | 添加 `font-display: swap` 到 Google Fonts URL |
+| 内容被裁切 | **不要在 `.slide-content` 上使用 `max-height: 100%; overflow: hidden`**。字体变大后极易导致顶部标签或底部内容被遮挡。通过拆页解决溢出。 |
+| 投屏字太小 | 检查 clamp 上限值。投屏建议 title ≥ 2.8rem / body ≥ 1.05rem。可在 `<html>` 上加 `class="projection"` 启用投屏参数集。 |
+| 投屏颜色太浅 | 投影仪对比度低于显示器。`--text-secondary` 不应浅于 `#3d3835`，`--text-muted` 不应浅于 `#6b6560`。 |
+| 大屏内容太宽 | `.slide-content` 加 `max-width: min(100%, 1200px)` 防止拉伸。 |
+| `<br>` 换行不一致 | 不同视口宽度下 `<br>` 的位置语义会变。用 `<span style="display:block">每行文本</span>` 强制精确换行。 |
+| 翻页笔无反应 | 确认 JS 监听了 `PageDown` / `PageUp`（不只是方向键）。 |
