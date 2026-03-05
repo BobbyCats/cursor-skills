@@ -1,0 +1,13 @@
+{
+  "name": "html-to-pdf",
+  "version": "1.0.0",
+  "description": "Export scroll-snap HTML slides to high-res multi-page PDF",
+  "main": "to-pdf.js",
+  "scripts": {
+    "export": "node to-pdf.js"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "puppeteer-core": "^24.37.5"
+  }
+}
