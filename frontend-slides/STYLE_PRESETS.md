@@ -1,6 +1,6 @@
 # 风格预设参考
 
-共 16 种风格预设：12 种通用 + 4 种商业场景。每种预设均包含中文字体对。
+共 17 种风格预设：12 种通用 + 5 种商业场景。每种预设均包含中文字体对。
 
 **核心原则：只用抽象形状，不用插画。**
 
@@ -674,6 +674,68 @@ body { font-family: 'Space Grotesk', 'Noto Sans SC', sans-serif; }
 
 ---
 
+### 17. Neo-Brutalist Editorial (Noir Edition)
+
+**氛围**：硬核、工业、印刷感、数据驱动、新野兽主义
+
+**适合**：投资路演、硬核数据展示、极客产品介绍、强调逻辑与事实的场合
+
+**布局**：纯黑白对比，粗实线边框，无圆角，无阴影。引入“票根（Ticket）”框架概念，带有条形码、等宽编号、竖排文字等装饰。
+
+**字体**：
+- 英文/数字/装饰：`JetBrains Mono` (400/700)
+- 标题/正文：`Noto Serif SC` (400/700/900)
+
+**配色**：
+```css
+:root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --ink2: #333333;
+    --ink3: #666666;
+    --ink4: #999999;
+    --accent: #e8520a; /* 橙红 */
+    --green: #22c55e;  /* 正向数据色 */
+    --border-w: 3px;
+}
+```
+
+**签名元素**：
+- **全局票根框架**：页面四周有固定的粗线边框，顶部有类似车票的日期、编号、条形码区域。
+- **无圆角与实线**：所有卡片、图表、按钮均无 `border-radius`，使用 `var(--border-w) solid var(--ink)`。
+- **黑色块标签**：标签（`.tag`）使用黑底白字，大字距（`letter-spacing: 0.2em`），等宽字体，全大写。
+- **条形码装饰**：使用 CSS 绘制的条形码（不同宽度的竖线组合）作为视觉点缀。
+- **对数/比例进度条**：进度条图表使用透明轨道+黑色粗边框，内部填充色块，右侧带粗边框。
+
+**CSS 片段**：
+```css
+/* 票根框架基础 */
+.global-ticket-frame {
+    position: fixed; inset: 0; pointer-events: none; z-index: 100;
+    border: var(--border-w) solid var(--ink);
+    display: flex; flex-direction: column;
+}
+.gt-top {
+    height: clamp(2rem, 4vw, 3rem); border-bottom: var(--border-w) solid var(--ink);
+    display: flex; align-items: stretch; font-family: var(--font-m); font-size: 0.6rem;
+}
+.gt-top-sec {
+    border-right: 1px solid var(--ink); display: flex; align-items: center; padding: 0 10px;
+}
+/* 标签样式 */
+.tag {
+    display: inline-block; font-family: var(--font-m); font-size: var(--sm);
+    background: var(--ink); color: var(--bg);
+    padding: 4px 10px; text-transform: uppercase; letter-spacing: 0.2em; font-weight: 700;
+}
+/* 条形码生成 */
+.barcode { display: flex; gap: 1px; align-items: flex-end; height: 2rem; }
+.barcode span { display: block; background: var(--ink); width: 2px; }
+.barcode .w { width: 4px; } .barcode .n { width: 1px; }
+```
+
+---
+
 ## 字体对速查表
 
 | 预设 | 英文标题 | 英文正文 | 中文标题 | 中文正文 | 来源 |
@@ -694,6 +756,7 @@ body { font-family: 'Space Grotesk', 'Noto Sans SC', sans-serif; }
 | Data Executive | Inter | Inter | Noto Sans SC (700) | Noto Sans SC (400) | Google |
 | Clean Brief | Instrument Sans | Instrument Sans | Noto Sans SC (700) | Noto Sans SC (400) | Google |
 | Product Showcase | Space Grotesk | Space Grotesk | Noto Sans SC (700) | Noto Sans SC (400) | Google |
+| Neo-Brutalist Editorial | JetBrains Mono | JetBrains Mono | Noto Serif SC (900) | Noto Serif SC (400) | Google |
 
 ---
 
